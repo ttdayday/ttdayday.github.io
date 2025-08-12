@@ -3,23 +3,75 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kids Shape Matching Game</title>
     <link rel="stylesheet" href="Build/TemplateData/style.css">
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #f0f0f0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        width: 100vw;
+        overflow-x: hidden;
+      }
+      #unity-container {
+        width: 100%;
+        max-width: 960px;
+        background: #ffffff;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      #unity-canvas {
+        width: 100% !important;
+        height: 100% !important;
+        aspect-ratio: 16/10;
+        background: #231F20;
+      }
+      #unity-loading-bar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+      #unity-progress-bar-empty { width: 141px; height: 18px; margin-top: 10px; margin-left: 6.5px; background: url("Build/TemplateData/progress-bar-empty-dark.png") no-repeat center }
+      #unity-progress-bar-full { width: 0%; height: 18px; margin-top: 10px; background: url("Build/TemplateData/progress-bar-full-dark.png") no-repeat center }
+      #unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none }
+    </style>
   </head>
   <body>
     <div id="unity-container">
-      <canvas id="unity-canvas" style="width: 960px; height: 600px; background: #231F20"></canvas>
+      <canvas id="unity-canvas"></canvas>
       <div id="unity-loading-bar">
         <div id="unity-logo"></div>
         <div id="unity-progress-bar-empty">
           <div id="unity-progress-bar-full"></div>
         </div>
       </div>
-      <div id="unity-warning"> </div>
+      <div id="unity-warning"></div>
     </div>
     <script src="Build/Build/Build.loader.js"></script>
     <script>
-      createUnityInstance(document.querySelector("#unity-canvas"), {
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      // Show a fullscreen button for mobile devices when supported
+      function setupMobileFullscreen() {
+        if (document.fullscreenEnabled) {
+          var fullscreenButton = document.createElement("button");
+          fullscreenButton.textContent = "Fullscreen";
+          fullscreenButton.style.position = "absolute";
+          fullscreenButton.style.right = "10px";
+          fullscreenButton.style.top = "10px";
+          fullscreenButton.addEventListener("click", function() {
+            canvas.requestFullscreen();
+          });
+          container.appendChild(fullscreenButton);
+        }
+      }
+
+      createUnityInstance(canvas, {
         dataUrl: "Build/Build/Build.data",
         frameworkUrl: "Build/Build/Build.framework.js",
         codeUrl: "Build/Build/Build.wasm",
@@ -27,8 +79,11 @@
         companyName: "DefaultCompany",
         productName: "KidPuzzleGame",
         productVersion: "0.1",
+      }, (progress) => {
+        progressBarFull.style.width = 100 * progress + "%";
       }).then((unityInstance) => {
         loadingBar.style.display = "none";
+        setupMobileFullscreen();
       }).catch((message) => {
         alert(message);
       });
